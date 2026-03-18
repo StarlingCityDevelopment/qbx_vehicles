@@ -56,13 +56,17 @@ local function buildWhereClause(filters)
         whereClauseCrumbs[#whereClauseCrumbs + 1] = 'id = ?'
         placeholders[#placeholders + 1] = filters.vehicleId
     end
+    local ownerCrumbs = {}
     if filters.citizenid then
-        whereClauseCrumbs[#whereClauseCrumbs + 1] = 'citizenid = ?'
+        ownerCrumbs[#ownerCrumbs + 1] = 'citizenid = ?'
         placeholders[#placeholders + 1] = filters.citizenid
     end
     if filters.group then
-        whereClauseCrumbs[#whereClauseCrumbs + 1] = '`group` = ?'
+        ownerCrumbs[#ownerCrumbs + 1] = '`group` = ?'
         placeholders[#placeholders + 1] = filters.group
+    end
+    if #ownerCrumbs > 0 then
+        whereClauseCrumbs[#whereClauseCrumbs + 1] = string.format('(%s)', table.concat(ownerCrumbs, ' OR '))
     end
     if filters.garage then
         whereClauseCrumbs[#whereClauseCrumbs + 1] = 'garage = ?'
