@@ -1,0 +1,44 @@
+name: Zip Creator
+
+on:
+  push:
+
+jobs:
+  create-zip:
+    name: Build and Create Downloadable Zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install archive tools
+        run: sudo apt install zip
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bundle files
+        run: |
+          mkdir -p ./temp/qbx_vehicles
+          cp ./{fxmanifest.lua,vehicles.sql} ./temp/qbx_vehicles
+          cp -r ./server ./temp/qbx_vehicles
+          cd ./temp && zip -r ../qbx_vehicles.zip ./qbx_vehicles
+
+      - name: Create Release
+        uses: 'marvinpinto/action-automatic-releases@v1.2.1'
+        with:
+          automatic_release_tag: "latest"
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          title: 'Ready to download'
+          prerelease: true
+          files: qbx_vehicles.zip
+        env:
+          CI: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: StarlingCityDevelopment/resources
+          event-type: update-resources
+          client-payload: '{"res": "qbx_vehicles"}'
