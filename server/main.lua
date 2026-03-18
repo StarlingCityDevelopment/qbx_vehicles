@@ -61,7 +61,7 @@ local function buildWhereClause(filters)
         placeholders[#placeholders + 1] = filters.citizenid
     end
     if filters.group then
-        whereClauseCrumbs[#whereClauseCrumbs + 1] = 'group = ?'
+        whereClauseCrumbs[#whereClauseCrumbs + 1] = '`group` = ?'
         placeholders[#placeholders + 1] = filters.group
     end
     if filters.garage then
@@ -89,7 +89,7 @@ end
 ---@param filters? PlayerVehiclesInternalFilters
 ---@return PlayerVehicle[]
 local function getPlayerVehiclesInternal(filters)
-    local query = 'SELECT id, citizenid, group, vehicle, mods, garage, state, depotprice, coords FROM player_vehicles'
+    local query = 'SELECT id, citizenid, `group`, vehicle, mods, garage, state, depotprice, coords FROM player_vehicles'
     local whereClause, placeholders = buildWhereClause(filters)
     lib.print.debug(query .. whereClause)
     local results = MySQL.query.await(query .. whereClause, placeholders)
@@ -164,7 +164,7 @@ local function createPlayerVehicle(request)
     end
 
     return MySQL.insert.await(
-        'INSERT INTO player_vehicles (license, citizenid, group, vehicle, hash, mods, plate, state, garage) VALUES ((SELECT license FROM players WHERE citizenid = @citizenid), @citizenid, @group, @vehicle, @hash, @mods, @plate, @state, @garage)',
+        'INSERT INTO player_vehicles (license, citizenid, `group`, vehicle, hash, mods, plate, state, garage) VALUES ((SELECT license FROM players WHERE citizenid = @citizenid), @citizenid, @group, @vehicle, @hash, @mods, @plate, @state, @garage)',
         {
             citizenid = request.citizenid,
             group = request.group,
@@ -192,7 +192,7 @@ local function setPlayerVehicleOwner(vehicleId, citizenid, group)
         }
     end
     MySQL.update.await(
-        'UPDATE player_vehicles SET citizenid = @citizenid, group = @group, license = (SELECT license FROM players WHERE citizenid = @citizenid) WHERE id = @id',
+        'UPDATE player_vehicles SET citizenid = @citizenid, `group` = @group, license = (SELECT license FROM players WHERE citizenid = @citizenid) WHERE id = @id',
         {
             citizenid = citizenid,
             group = group,
@@ -211,7 +211,7 @@ local function deletePlayerVehicles(idType, idValue)
         idType == 'citizenid' or idType == 'group' or idType == 'license' or idType == 'plate' or idType == 'vehicleId',
         json.encode(idType) .. ' is not a valid idType')
 
-    local column = idType == 'vehicleId' and 'id' or idType
+    local column = idType == 'vehicleId' and 'id' or (idType == 'group' and '`group`' or idType)
     MySQL.query.await('DELETE FROM player_vehicles WHERE ' .. column .. ' = ?', {
         idValue
     })

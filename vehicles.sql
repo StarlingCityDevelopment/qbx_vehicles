@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `player_vehicles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `license` varchar(50) DEFAULT NULL,
   `citizenid` varchar(50) DEFAULT NULL,
+  `group` varchar(50) DEFAULT NULL,
   `vehicle` varchar(50) DEFAULT NULL,
   `hash` varchar(50) DEFAULT NULL,
   `mods` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
@@ -21,4 +22,4 @@ CREATE TABLE IF NOT EXISTS `player_vehicles` (
   FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-ALTER TABLE IF EXISTS `player_vehicles` ADD `group` VARCHAR(50) DEFAULT NULL AFTER `citizenid`;
+ALTER TABLE IF EXISTS `player_vehicles` ADD COLUMN IF NOT EXISTS `group` VARCHAR(50) DEFAULT NULL AFTER `citizenid`;
