@@ -322,4 +322,17 @@ exports('SaveVehicle', saveVehicle)
 Citizen.CreateThreadNow(function()
     local sql = LoadResourceFile(cache.resource, 'vehicles.sql')
     MySQL.query.await(sql)
+
+    local hasGroupColumn = MySQL.scalar.await([[
+        SELECT 1
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'player_vehicles'
+            AND COLUMN_NAME = 'group'
+        LIMIT 1
+    ]])
+
+    if not hasGroupColumn then
+        MySQL.query.await('ALTER TABLE `player_vehicles` ADD COLUMN `group` VARCHAR(50) DEFAULT NULL AFTER `citizenid`')
+    end
 end)
